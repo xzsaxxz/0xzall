@@ -93,58 +93,86 @@ async def gen_thumb(videoid):
             (5, 5), f"{MUSIC_BOT_NAME}", fill="white", font=name_font
         )
         draw.text(
-            (600, 150),
-            "NOW PLAYING",
-            fill="white",
-            stroke_width=2,
-            stroke_fill="white",
-            font=font2,
+                    (30,10),
+                    f"{MUSIC_BOT_NAME}",
+                    fill="white",
+                    stroke_width=5,
+                    stroke_fill="black",
+                    font=font5,
         )
+        draw.text(
+                    (100, 100),
+                    "NOW PLAYING",
+                    fill="white",
+                    stroke_width=8,
+                    stroke_fill="black",
+                    font=font2,
+                )
         for line in para:
-            if j == 1:
-                j += 1
-                draw.text(
-                    (600, 340),
-                    f"{line}",
-                    fill="white",
-                    stroke_width=1,
-                    stroke_fill="white",
-                    font=font,
-                )
-            if j == 0:
-                j += 1
-                draw.text(
-                    (600, 280),
-                    f"{line}",
-                    fill="white",
-                    stroke_width=1,
-                    stroke_fill="white",
-                    font=font,
-                )
-
+                    if j == 1:
+                        j += 1
+                        draw.text(
+                            (120, 280),
+                            f"{line}",
+                            fill="white",
+                            stroke_width=5,
+                            stroke_fill="black",
+                            font=font,
+                        )
+                    if j == 0:
+                        j += 1
+                        draw.text(
+                            (120, 220),
+                            f"{line}",
+                            fill="white",
+                            stroke_width=5,
+                            stroke_fill="black",
+                            font=font,
+                        )
         draw.text(
-            (600, 450),
-            f"Views : {views[:23]}",
-            (255, 255, 255),
-            font=arial,
+                    (120, 340),
+                    f"Views : {views[:23]}",
+                    (255, 255, 255),
+                    font=arial,
+                )
+        draw.text(
+                    (120, 390),
+                    f"Duration : {duration[:23]} Mins",
+                    (255, 255, 255),
+                    font=arial,
+                )
+        draw.text(
+                    (120, 440),
+                    f"Channel : {channel}",
+                    (255, 255, 255),
+                    font=arial,
+                )
+        
+        draw.text(
+                (540,550),
+                f"ﮩﮩ٨ـﮩﮩ٨ـﮩ٨ـﮩﮩ٨ـ٨ـﮩﮩ٨ـﮩ٨ـﮩﮩ٨ـ",
+                (255, 255, 255),
+                font=name_font,
         )
         draw.text(
-            (600, 500),
-            f"Duration : {duration[:23]} Mins",
+            (50, 600),
+            f"00:55 ─────────────●─────────────────────────────────────────── {duration}",
             (255, 255, 255),
-            font=arial,
+            font=font3,
+        
         )
         draw.text(
-            (600, 550),
-            f"Channel : {channel}",
-            (255, 255, 255),
-            font=arial,
+                (50,650),
+                f"Volume: ■■■■■□□□                      ↻      ◁     II    ▷     ↺",
+                (255, 255, 255),
+                font=font4,
         )
         try:
             os.remove(f"cache/thumb{videoid}.png")
         except:
             pass
-        background.save(f"cache/{videoid}.png")
-        return f"cache/{videoid}.png"
-    except Exception:
+        background.save(f"cache/{videoid}_{user_id}.png")
+        return f"cache/{videoid}_{user_id}.png"
+    except Exception as e:
         return YOUTUBE_IMG_URL
+
