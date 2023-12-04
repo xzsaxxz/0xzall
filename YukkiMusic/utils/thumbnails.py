@@ -59,7 +59,7 @@ async def gen_thumb(videoid,user_id):
         for result in (await results.next())["result"]:
             try:
                 title = result["title"]
-                
+                title = re.sub("\W+", " ", title)
                 title = title.title()
             except:
                 title = "Unsupported Title"
@@ -102,24 +102,27 @@ async def gen_thumb(videoid,user_id):
         Xcen2 =xp.width / 2
         Ycen2 = xp.height / 2
         
-        #y=changeImageSize(400,400,circle2(youtube,Xcen1,Ycen1))
-        y=changeImageSize(400,400,circle(youtube))
-        background.paste(y,(690,40),mask=y)
-        b=ImageDraw.Draw(background)
-        b.pieslice([(690, 40), (1090,440)], 0, 360,outline = "white",width=10)
-        x= changeImageSize(270,270,circle(xp))
-        background.paste(x, (960,240), mask=x)
-        b=ImageDraw.Draw(background)
-        b.pieslice([(960,240), (1230,510)], 0, 360,outline ='black',width=10)
-    
-        draw=ImageDraw.Draw(background)
-        font = ImageFont.truetype("assets/TiltWarp-Regular.ttf",35)
-        font2 = ImageFont.truetype("assets/FasterOne-Regular.ttf",75)
+        youtube = Image.open(f"cache/thumb{videoid}.png")
+        image1 = changeImageSize(1280, 720, youtube)
+        image2 = image1.convert("RGBA")
+        background = image2.filter(filter=ImageFilter.BoxBlur(30))
+        enhancer = ImageEnhance.Brightness(background)
+        background = enhancer.enhance(0.6)
+        Xcenter = youtube.width / 2
+        Ycenter = youtube.height / 2
+        x1 = Xcenter - 250
+        y1 = Ycenter - 250
+        x2 = Xcenter + 250
+        y2 = Ycenter + 250
+        logo = youtube.crop((x1, y1, x2, y2))
+        logo.thumbnail((520, 520), Image.LANCZOS)
+        logo = ImageOps.expand(logo, border=15, fill="white")
+        background.paste(logo, (50, 100))
+        draw = ImageDraw.Draw(background)
+        font = ImageFont.truetype("assets/font2.ttf", 40)
+        font2 = ImageFont.truetype("assets/font2.ttf", 70)
         arial = ImageFont.truetype("assets/font2.ttf", 30)
-        name_font = ImageFont.truetype("assets/font6.ttf", 30)
-        font3=ImageFont.truetype("assets/font3.ttf",30)
-        font4=ImageFont.truetype("assets/font4.ttf",30)
-        font5=ImageFont.truetype("assets/Gugi-Regular.ttf",40)
+        name_font = ImageFont.truetype("assets/font.ttf", 30)
         para = textwrap.wrap(title, width=32)
         j = 0
         draw.text(
