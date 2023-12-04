@@ -1,13 +1,3 @@
-#
-# Copyright (C) 2021-present by TeamYukki@Github, < https://github.com/TeamYukki >.
-#
-# This file is part of < https://github.com/TeamYukki/YukkiMusicBot > project,
-# and is released under the "GNU v3.0 License Agreement".
-# Please see < https://github.com/TeamYukki/YukkiMusicBot/blob/master/LICENSE >
-#
-# All rights reserved.
-#
-
 import os
 import re
 import textwrap
@@ -17,8 +7,10 @@ import aiohttp
 from PIL import (Image, ImageDraw, ImageEnhance, ImageFilter,
                  ImageFont, ImageOps)
 from youtubesearchpython.__future__ import VideosSearch
+from YukkiMusic import app
 
-from config import MUSIC_BOT_NAME, YOUTUBE_IMG_URL
+from config import YOUTUBE_IMG_URL,MUSIC_BOT_NAME
+
 
 
 def changeImageSize(maxWidth, maxHeight, image):
@@ -26,12 +18,40 @@ def changeImageSize(maxWidth, maxHeight, image):
     heightRatio = maxHeight / image.size[1]
     newWidth = int(widthRatio * image.size[0])
     newHeight = int(heightRatio * image.size[1])
-    return image.resize((newWidth, newHeight))
+    newImage = image.resize((newWidth, newHeight))
+    return newImage
 
+def circle(img):
+    h,w=img.size
+    a = Image.new('L', [h,w], 0)
+    b = ImageDraw.Draw(a)
+    b.pieslice([(0, 0), (h,w)], 0, 360, fill = 255,outline = "white")
+    c = np.array(img)
+    d = np.array(a)
+    e = np.dstack((c, d))
+    return Image.fromarray(e)
 
-async def gen_thumb(videoid):
-    if os.path.isfile(f"cache/{videoid}.png"):
-        return f"cache/{videoid}.png"
+def circle2(img,Xcenter,Ycenter):
+    h,w=img.size
+    a = Image.new('L', [h,w], 0)
+    b = ImageDraw.Draw(a)
+    b.pieslice([(0, 0), (h,w)], 0, 360, fill = 255,outline = "white")
+    b.pieslice([(int(Xcenter-50), int(Ycenter-30)), (int(Xcenter+50),int(Ycenter+30))], 0, 360, fill = 0,outline = "black")
+    c = np.array(img)
+    d = np.array(a)
+    e = np.dstack((c, d))
+    return Image.fromarray(e)
+
+def squ(img1):
+    a = Image.new('L', [640,500], 0)
+    b=ImageDraw.Draw(a)
+    b.line((320,0,240,550),fill="white",width=670)
+    e=Image.fromarray(np.dstack((np.array(img1),np.array(a))))
+    return e
+
+async def gen_thumb(videoid,user_id):
+    if os.path.isfile(f"cache/{videoid}_{user_id}.png"):
+       return f"cache/{videoid}_{user_id}.png"
 
     url = f"https://www.youtube.com/watch?v={videoid}"
     try:
@@ -46,7 +66,7 @@ async def gen_thumb(videoid):
             try:
                 duration = result["duration"]
             except:
-                duration = "Unknown Mins"
+                   duration = "Unknown Mins"
             thumbnail = result["thumbnails"][0]["url"].split("?")[0]
             try:
                 views = result["viewCount"]["short"]
@@ -56,7 +76,6 @@ async def gen_thumb(videoid):
                 channel = result["channel"]["name"]
             except:
                 channel = "Unknown Channel"
-
         async with aiohttp.ClientSession() as session:
             async with session.get(thumbnail) as resp:
                 if resp.status == 200:
@@ -65,33 +84,44 @@ async def gen_thumb(videoid):
                     )
                     await f.write(await resp.read())
                     await f.close()
-
+        try: 
+            async for photo in app.get_chat_photos(user_id,1): 
+                sp=await app.download_media(photo.file_id, file_name=f'{user_id}.jpg') 
+        except: 
+            async for photo in app.get_chat_photos(app.id,1): 
+                sp=await app.download_media(photo.file_id, file_name=f'{app.id}.jpg')
+        xp=Image.open(sp)
         youtube = Image.open(f"cache/thumb{videoid}.png")
         image1 = changeImageSize(1280, 720, youtube)
         image2 = image1.convert("RGBA")
-        background = image2.filter(filter=ImageFilter.BoxBlur(30))
+        background = image2.filter(filter=ImageFilter.BoxBlur(70))
         enhancer = ImageEnhance.Brightness(background)
-        background = enhancer.enhance(0.6)
-        Xcenter = youtube.width / 2
-        Ycenter = youtube.height / 2
-        x1 = Xcenter - 250
-        y1 = Ycenter - 250
-        x2 = Xcenter + 250
-        y2 = Ycenter + 250
-        logo = youtube.crop((x1, y1, x2, y2))
-        logo.thumbnail((520, 520), Image.LANCZOS)
-        logo = ImageOps.expand(logo, border=15, fill="white")
-        background.paste(logo, (50, 100))
-        draw = ImageDraw.Draw(background)
-        font = ImageFont.truetype("assets/font2.ttf", 40)
-        font2 = ImageFont.truetype("assets/font2.ttf", 70)
+        background = enhancer.enhance(0.5)
+        Xcen1 = image1.width / 2
+        Ycen1 = image1.height / 2
+        Xcen2 =xp.width / 2
+        Ycen2 = xp.height / 2
+        
+        #y=changeImageSize(400,400,circle2(youtube,Xcen1,Ycen1))
+        y=changeImageSize(400,400,circle(youtube))
+        background.paste(y,(690,40),mask=y)
+        b=ImageDraw.Draw(background)
+        b.pieslice([(690, 40), (1090,440)], 0, 360,outline = "white",width=10)
+        x= changeImageSize(270,270,circle(xp))
+        background.paste(x, (960,240), mask=x)
+        b=ImageDraw.Draw(background)
+        b.pieslice([(960,240), (1230,510)], 0, 360,outline ='black',width=10)
+    
+        draw=ImageDraw.Draw(background)
+        font = ImageFont.truetype("assets/TiltWarp-Regular.ttf",35)
+        font2 = ImageFont.truetype("assets/FasterOne-Regular.ttf",75)
         arial = ImageFont.truetype("assets/font2.ttf", 30)
-        name_font = ImageFont.truetype("assets/font.ttf", 30)
+        name_font = ImageFont.truetype("assets/font6.ttf", 30)
+        font3=ImageFont.truetype("assets/font3.ttf",30)
+        font4=ImageFont.truetype("assets/font4.ttf",30)
+        font5=ImageFont.truetype("assets/Gugi-Regular.ttf",40)
         para = textwrap.wrap(title, width=32)
         j = 0
-        draw.text(
-            (5, 5), f"{MUSIC_BOT_NAME}", fill="white", font=name_font
-        )
         draw.text(
                     (30,10),
                     f"{MUSIC_BOT_NAME}",
